@@ -49,12 +49,12 @@ exports.signup= async (req, res) => {
 
     try {
       if(password.length < 8) {
-        res.status(400).json({ message: 'Password length is too short.' });
+        res.status(400).json({ message: 'Password length is too short' });
       } else {
         // Create a new user with provided email and password
         const user = await users.findOne({ where: { email: email } });
         if (user) {
-          res.status(400).json({ message: 'Already registered email.' });
+          res.status(400).json({ message: 'Email is already registered' });
         } else {
           const newUser = await users.create({ uid: uid, email: email, username: username, password: password });
           const token = jwt.sign({ email: email }, secretKey, { expiresIn: '672h' });
@@ -65,7 +65,7 @@ exports.signup= async (req, res) => {
     } catch (error) {
       // Handle Sequelize unique constraint violation error
       if (error.name === 'SequelizeUniqueConstraintError') {
-        res.status(400).json({ message: 'Email is already registered.', uid: uid });
+        res.status(400).json({ message: 'Email is already registered', uid: uid });
       } else {
         console.error('Error:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -83,7 +83,7 @@ exports.sendOtp= async (req, res) => {
     try {
       const user = await users.findOne({ where: { email: email } });
       if (!user) {
-        res.status(401).json({ message: 'Not registered email.' });
+        res.status(401).json({ message: 'Didn\'t find any account with this email address' });
       } else {
         // Create a new user with provided email and password
         let otp= genOtp();
@@ -107,9 +107,9 @@ exports.verifyOtp= async (req, res) => {
       // Create a new user with provided email and password
       const user = await otps.findOne({ where: { pid: pid, otp: otp } });
       if (user)
-      res.status(201).json({ message: 'Otp successful!', user });
+      res.status(201).json({ message: 'Your OTP is correct!', user });
       else
-      res.status(401).json({ message: 'Otp unsuccessful!' });
+      res.status(401).json({ message: 'You have entered the wrong OTP' });
     
     } catch (error) {
         console.error('Error:', error);
@@ -124,7 +124,7 @@ exports.resetPassword= async (req, res) => {
 
     try {
       if(password.length < 8) {
-        res.status(400).json({ message: 'Password length is too short.' });
+        res.status(400).json({ message: 'Password length is too short' });
       } else {
         const user = await users.update({ password: password }, {
           where: { uid: uid }
@@ -133,13 +133,8 @@ exports.resetPassword= async (req, res) => {
         res.status(201).json({ message: 'Signup successful!', user });
       }
     } catch (error) {
-      // Handle Sequelize unique constraint violation error
-      if (error.name === 'SequelizeUniqueConstraintError') {
-        res.status(400).json({ message: 'Email is already registered.', uid: uid });
-      } else {
         console.error('Error:', error);
         res.status(500).json({ message: 'Internal server error' });
-      }
     }
 }
 
