@@ -48,15 +48,19 @@ exports.signup= async (req, res) => {
     const uid= 'UID'+rand();
 
     try {
-      // Create a new user with provided email and password
-      const user = await users.findOne({ where: { email: email } });
-      if (user) {
-        res.status(400).json({ message: 'Already registered email.' });
+      if(password.length < 8) {
+        res.status(400).json({ message: 'Password length is too short.' });
       } else {
-        const newUser = await users.create({ uid: uid, email: email, username: username, password: password });
-        const token = jwt.sign({ email: email }, secretKey, { expiresIn: '672h' });
-  
-        res.status(201).json({ message: 'Signup successful!', newUser, token: token });
+        // Create a new user with provided email and password
+        const user = await users.findOne({ where: { email: email } });
+        if (user) {
+          res.status(400).json({ message: 'Already registered email.' });
+        } else {
+          const newUser = await users.create({ uid: uid, email: email, username: username, password: password });
+          const token = jwt.sign({ email: email }, secretKey, { expiresIn: '672h' });
+    
+          res.status(201).json({ message: 'Signup successful!', newUser, token: token });
+        }
       }
     } catch (error) {
       // Handle Sequelize unique constraint violation error
@@ -119,11 +123,15 @@ exports.resetPassword= async (req, res) => {
     const users= db.users;
 
     try {
-      const user = await users.update({ password: password }, {
-        where: { uid: uid }
-      });
-
-      res.status(201).json({ message: 'Signup successful!', user });
+      if(password.length < 8) {
+        res.status(400).json({ message: 'Password length is too short.' });
+      } else {
+        const user = await users.update({ password: password }, {
+          where: { uid: uid }
+        });
+  
+        res.status(201).json({ message: 'Signup successful!', user });
+      }
     } catch (error) {
       // Handle Sequelize unique constraint violation error
       if (error.name === 'SequelizeUniqueConstraintError') {
